@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Smart Retail Billing</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#1e3c72,#2a5298);
+min-height:100vh;
+color:white;
+text-align:center;
+padding:20px;
+}
+
+h1{
+margin-bottom:20px;
+font-size:45px;
+}
+
+h2{
+margin:20px 0;
+}
+
+.card{
+width:400px;
+margin:20px auto;
+background:rgba(255,255,255,0.1);
+padding:25px;
+border-radius:15px;
+backdrop-filter:blur(10px);
+}
+
+input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:8px;
+font-size:16px;
+}
+
+button{
+padding:10px 20px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin:5px;
+font-weight:bold;
+}
+
+.primary{
+background:#32e0c4;
+color:black;
+}
+
+.delete{
+background:#ff4d4d;
+color:white;
+}
+
+.green{
+background:#28a745;
+color:white;
+}
+
+.hidden{
+display:none;
+}
+
+table{
+width:95%;
+margin:20px auto;
+border-collapse:collapse;
+background:white;
+color:black;
+}
+
+th{
+background:#0d1117;
+color:white;
+}
+
+th,td{
+padding:15px;
+border:1px solid #ddd;
+}
+
+.totalBox{
+font-size:35px;
+margin-top:20px;
+font-weight:bold;
+}
+
+.invoiceBtn{
+margin-top:15px;
+}
+
+.logoutBtn{
+background:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Smart Retail Billing</h1>
+
+<!-- LOGIN -->
+
+<div id="loginPage" class="card">
+
+<h2>Login</h2>
+
+<input type="text"
+id="loginUser"
+placeholder="Username">
+
+<input type="password"
+id="loginPass"
+placeholder="Password">
+
+<button class="primary"
+onclick="login()">
+
+Login
+
+</button>
+
+<br>
+
+<button onclick="showSignup()">
+
+Create Account
+
+</button>
+
+</div>
+
+<!-- SIGNUP -->
+
+<div id="signupPage" class="card hidden">
+
+<h2>Create Account</h2>
+
+<input type="text"
+id="signupUser"
+placeholder="Username">
+
+<input type="password"
+id="signupPass"
+placeholder="Password">
+
+<button class="primary"
+onclick="signup()">
+
+Sign Up
+
+</button>
+
+<br>
+
+<button onclick="showLogin()">
+
+Back to Login
+
+</button>
+
+</div>
+
+<!-- MAIN APP -->
+
+<div id="appPage" class="hidden">
+
+<h2>Billing Dashboard</h2>
+
+<button class="logoutBtn"
+onclick="logout()">
+
+Logout
+
+</button>
+
+<!-- CUSTOMER -->
+
+<div class="card">
+
+<h2>Customer Details</h2>
+
+<input type="text"
+id="customerName"
+placeholder="Customer Name">
+
+</div>
+
+<!-- PRODUCT -->
+
+<div class="card">
+
+<h2>Add Product</h2>
+
+<input type="text"
+id="name"
+placeholder="Product Name">
+
+<input type="number"
+id="price"
+placeholder="Price">
+
+<input type="number"
+id="stock"
+placeholder="Stock">
+
+<button class="primary"
+onclick="addProduct()">
+
+Add Product
+
+</button>
+
+</div>
+
+<!-- PRODUCTS -->
+
+<h2>Products</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Name</th>
+<th>Price</th>
+<th>Stock</th>
+<th>Qty</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="productTable"></tbody>
+
+</table>
+
+<!-- CART -->
+
+<h2>Cart</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Name</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Total</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="cartTable"></tbody>
+
+</table>
+
+<div class="totalBox"
+id="grandTotal">
+
+Total: ₹0
+
+</div>
+
+<div class="invoiceBtn">
+
+<button class="primary"
+onclick="generateBill()">
+
+Generate Bill
+
+</button>
+
+<button onclick="clearCart()">
+
+Clear Cart
+
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+let products = [];
+
+let cart = [];
+
+let grandTotal = 0;
+
+// SHOW SIGNUP
+
+function showSignup(){
+
+document.getElementById("loginPage")
+.classList.add("hidden");
+
+document.getElementById("signupPage")
+.classList.remove("hidden");
+
+}
+
+// SHOW LOGIN
+
+function showLogin(){
+
+document.getElementById("signupPage")
+.classList.add("hidden");
+
+document.getElementById("loginPage")
+.classList.remove("hidden");
+
+}
+
+// SIGNUP
+
+function signup(){
+
+let user =
+document.getElementById("signupUser").value;
+
+let pass =
+document.getElementById("signupPass").value;
+
+if(user === "" || pass === ""){
+
+alert("Enter details");
+
+return;
+}
+
+localStorage.setItem("user",user);
+
+localStorage.setItem("pass",pass);
+
+alert("Account Created");
+
+showLogin();
+
+}
+
+// LOGIN
+
+function login(){
+
+let user =
+document.getElementById("loginUser").value;
+
+let pass =
+document.getElementById("loginPass").value;
+
+let savedUser =
+localStorage.getItem("user");
+
+let savedPass =
+localStorage.getItem("pass");
+
+if(user === savedUser &&
+pass === savedPass){
+
+document.getElementById("loginPage")
+.classList.add("hidden");
+
+document.getElementById("signupPage")
+.classList.add("hidden");
+
+document.getElementById("appPage")
+.classList.remove("hidden");
+
+}else{
+
+alert("Invalid Login");
+
+}
+
+}
+
+// LOGOUT
+
+function logout(){
+
+location.reload();
+
+}
+
+// ADD PRODUCT
+
+function addProduct() {
+
+let name =
+document.getElementById("name").value;
+
+let price =
+document.getElementById("price").value;
+
+let stock =
+document.getElementById("stock").value;
+
+if(name === "" ||
+price === "" ||
+stock === "") {
+
+alert("Enter all fields");
+
+return;
+
+}
+
+fetch("/SmartRetailServlet/addProduct", {
+
+method: "POST",
+
+headers: {
+
+"Content-Type":
+"application/x-www-form-urlencoded"
+
+},
+
+body:
+
+"name=" + encodeURIComponent(name)
+
++ "&price=" + encodeURIComponent(price)
+
++ "&quantity=" + encodeURIComponent(stock)
+
+})
+
+.then(response => response.text())
+
+.then(data => {
+
+alert(data);
+
+let product = {
+
+name: name,
+
+price: parseFloat(price),
+
+stock: parseInt(stock)
+
+};
+
+products.push(product);
+
+displayProducts();
+
+document.getElementById("name").value = "";
+
+document.getElementById("price").value = "";
+
+document.getElementById("stock").value = "";
+
+})
+
+.catch(error => {
+
+console.log(error);
+
+alert("Error");
+
+});
+
+}
+
+// DISPLAY PRODUCTS
+
+function displayProducts(){
+
+let table =
+document.getElementById("productTable");
+
+table.innerHTML = "";
+
+products.forEach((product,index)=>{
+
+table.innerHTML += `
+
+<tr>
+
+<td>${product.name}</td>
+
+<td>${product.price}</td>
+
+<td>${product.stock}</td>
+
+<td>1</td>
+
+<td>
+
+<button class="green"
+onclick="addToCart(${index})">
+
+Add
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+// ADD TO CART
+
+function addToCart(index) {
+
+let product = products[index];
+
+if(product.stock <= 0) {
+
+alert("Out of Stock");
+
+return;
+}
+
+let existing =
+cart.find(item =>
+item.name === product.name);
+
+if(existing) {
+
+existing.qty += 1;
+
+existing.total =
+existing.qty * existing.price;
+
+} else {
+
+cart.push({
+
+name: product.name,
+
+qty: 1,
+
+price: product.price,
+
+total: product.price
+
+});
+
+}
+
+product.stock -= 1;
+
+displayProducts();
+
+displayCart();
+
+}
+
+// DISPLAY CART
+
+function displayCart(){
+
+let table =
+document.getElementById("cartTable");
+
+table.innerHTML = "";
+
+grandTotal = 0;
+
+cart.forEach((item,index)=>{
+
+grandTotal += item.total;
+
+table.innerHTML += `
+
+<tr>
+
+<td>${item.name}</td>
+
+<td>${item.qty}</td>
+
+<td>${item.price}</td>
+
+<td>${item.total}</td>
+
+<td>
+
+<button class="delete"
+onclick="deleteCart(${index})">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+document.getElementById("grandTotal")
+.innerHTML =
+"Total: ₹" + grandTotal;
+
+}
+
+// DELETE CART
+
+function deleteCart(index){
+
+cart.splice(index,1);
+
+displayCart();
+
+}
+
+// CLEAR CART
+
+function clearCart(){
+
+cart = [];
+
+displayCart();
+
+}
+
+// GENERATE BILL
+
+function generateBill() {
+
+if(cart.length === 0) {
+
+alert("Cart Empty");
+
+return;
+
+}
+cart.forEach(item => {
+
+    fetch("/SmartRetailServlet/updateStock", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type":
+            "application/x-www-form-urlencoded"
+        },
+
+        body:
+            "name=" + encodeURIComponent(item.name)
+            + "&qty=" + encodeURIComponent(item.qty)
+
+    });
+
+});
+let customer =
+document.getElementById("customerName").value;
+
+let bill = `
+SMART RETAIL BILL
+
+Customer: ${customer}
+
+`;
+
+cart.forEach(item => {
+
+bill += `
+
+${item.name}
+Qty: ${item.qty}
+Price: ₹${item.price}
+Total: ₹${item.total}
+
+`;
+
+});
+
+bill += `
+
+Grand Total: ₹${grandTotal}
+
+`;
+
+let newWindow =
+window.open("", "_blank");
+
+newWindow.document.write(`
+
+<html>
+
+<head>
+
+<title>Bill</title>
+
+<style>
+
+body{
+font-family:Arial;
+padding:20px;
+}
+
+h1{
+text-align:center;
+}
+
+pre{
+font-size:18px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>SMART RETAIL BILL</h1>
+
+<pre>${bill}</pre>
+
+</body>
+
+</html>
+
+`);
+
+newWindow.print();
+
+}
+
+</script>
+
+</body>
+
+</html>
